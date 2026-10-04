@@ -11,8 +11,15 @@ import math
 # return True or False
 def isearch(L, x):
     ###TODO
-    pass
-
+    
+    def f(found_yet, curr):
+        if found_yet or curr == x:
+            return True
+        else:
+            return False
+        
+    return iterate(f, False, L)
+    
 def iterate(f, x, a):
     # done. do not change me.
     if len(a) == 0:
@@ -24,7 +31,17 @@ def iterate(f, x, a):
 # return True or False
 def rsearch(L, x):
     ###TODO
-    pass
+    def f(left, right):
+        left_found = (left is True) or (left == x)
+        right_found = (right is True) or (right == x)
+        return left_found or right_found 
+
+    result = reduce(f, False, L)
+
+    if type(result) is not bool:
+        return result == x
+    
+    return result
 
 def reduce(f, id_, a):
     print(a)
@@ -100,7 +117,15 @@ def dedup(a, b):
     [1,2,3,4,5]
     """
     ###TODO
-    pass
+    
+    # if one of the lists is empty 
+    #if len(a) == 0 or len(b) == 0:
+    if not a or not b:
+        return a+b
+    #if there is duplicates return without the dublicate on b
+    if a[-1] == b[0]:
+        return a+ b[1:]
+    return a+b
     
 def doc_index_reduce(group):
     """
@@ -116,7 +141,16 @@ def doc_index_reduce(group):
     ('is', [0,1,2])
     """
     ### TODO fix this line
-    return (group[0], group[1])
+
+    #return (group[0], group[1])
+    word = group[0]
+    docids = group[1]
+
+    individual_docids = [[docid] for docid in docids]
+
+    final_docids = reduce(dedup, [], individual_docids)
+
+    return (word, final_docids)
 
 def collect(pairs):
     """
@@ -162,7 +196,7 @@ def parens_match_iterative(mylist):
     False
     """
     ### TODO
-    pass
+    return iterate(parens_update, 0, mylist) == 0
 
 
 def parens_update(current_output, next_input):
@@ -178,7 +212,21 @@ def parens_update(current_output, next_input):
       the updated value of `current_output`
     """
     ###TODO
-    pass
+    
+    # +1 for '(', -1 for ')', so if current_output is negative then too many ')' so wrong 
+
+    if current_output < 0:
+        return current_output
+    
+    if next_input =='(':
+        return current_output +1
+    elif next_input == ')':
+        return current_output -1
+    else:
+        return current_output
+    
+
+    
 
 #### Scan solution
 
@@ -200,7 +248,20 @@ def parens_match_scan(mylist):
     
     """
     ###TODO
-    pass
+    mapped_list = []
+    for i in mylist:
+        mapped_list.append(paren_map(i))
+
+    if not mapped_list:
+        return True
+    list_of_numbers, total_sum = scan(plus, 0, mapped_list)
+
+    #the min must be 0, not less, or else we have a )( case 
+
+    minimum = reduce(min_f, 0, list_of_numbers)
+
+    return minimum>=0 and total_sum==0
+   
 
 def scan(f, id_, a):
     """
@@ -268,5 +329,26 @@ def parens_match_dc_helper(mylist):
       parens_match_dc to return the final True or False value
     """
     ###TODO
-    pass
+    if len(mylist) == 0:
+        return (0,0)
+    if len(mylist) == 1:
+        if mylist[0] == '(':
+            return (0,1)
+        elif mylist[0] == ')':
+            return (1,0)
+        else:
+            return (0,0)
+        
+    left_half = parens_match_dc_helper(mylist[:len(mylist)//2])
+    right_half = parens_match_dc_helper(mylist[len(mylist)//2:])
+
+    #combine the two halves
+    #middle matches
+    middle_matches = min(left_half[1], right_half[0])
+    #since the middle parentehis could create a match, we need to subtract the number of matches
+    right_parens = left_half[0] + (right_half[0] - middle_matches)
+    left_parens = right_half[1] + (left_half[1] - middle_matches) 
+    return (right_parens, left_parens)
+
+
     
